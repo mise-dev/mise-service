@@ -1,0 +1,9 @@
+fastapi
+openai
+sqlmodel
+calendar
+momo
+pythonmultipart
+python-jose[cryptography]
+uvicorn
+passlib[bcrypt]
