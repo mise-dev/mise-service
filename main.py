@@ -51,8 +51,8 @@ async def  create_product(product:Product):
 @app.get("/Products/")
 async def read_products():
     with Session(engine) as session:
-        Products = session.exec(select(Product)).all()
-        return
+        products = session.exec(select(Product)).all()
+        return products
 
 @app.post("/upload")
 async def upload_file(

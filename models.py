@@ -16,7 +16,7 @@ class User(SQLModel, table=True):
 
 class Shop(SQLModel, table=True):
     id: int = Field(primary_key=True)
-    user_id: Optional[int] = Field(default=None, foreign_key="User.id")
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
     name: str
     description: str
     momo: int
@@ -25,7 +25,7 @@ class Shop(SQLModel, table=True):
 
 class Product(SQLModel, table=True):
     id: int = Field(primary_key=True)
-    shop_id: Optional[int] = Field(default=None, foreign_key="Shop.id")
+    shop_id: Optional[int] = Field(default=None, foreign_key="shop.id")
     name: str
     price: int
     description: str
