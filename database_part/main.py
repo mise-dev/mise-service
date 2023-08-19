@@ -7,11 +7,11 @@ from fastapi import FastAPI
 app = FastAPI()
 
 @app.on_event("startup")
-def on_startup():
+async def on_startup():
     create_db_and_tables()
     
 @app.post("/Users/")
-def create_user(user: User):
+async def create_user(user: User):
     with Session(engine) as session:
         session.add(user)
         session.commit()
@@ -19,13 +19,13 @@ def create_user(user: User):
         return user
     
 @app.get("/users/")
-def read_users():
+async def read_users():
     with Session(engine) as session: 
         Users = session.exec(select(User)).all()
         return Users
     
 @app.post("/shops/")
-def  create_shop(shop:Shop):
+async def  create_shop(shop:Shop):
     with Session(engine) as session:
         session.add(shop)
         session.commit()
@@ -33,13 +33,13 @@ def  create_shop(shop:Shop):
         return shop
     
 @app.get("/Shops/")
-def read_shops():
+async def read_shops():
     with Session(engine) as session:
         Shops = session.exec(select(Shop)).all()
         return Shops
     
 @app.post("/products/")
-def  create_shop(product:Product):
+async def  create_shop(product:Product):
     with Session(engine) as session:
         session.add(product)
         session.commit()
@@ -47,7 +47,7 @@ def  create_shop(product:Product):
         return product
     
 @app.get("/Products/")
-def read_shops():
+async def read_shops():
     with Session(engine) as session:
         Products = session.exec(select(Product)).all()
-        return Products
+        return
