@@ -13,6 +13,7 @@ class User(SQLModel, table=True):
     location: str
     date_of_birth: str
     active: bool
+    password: str
 
 class Shop(SQLModel, table=True):
     id: int = Field(primary_key=True)

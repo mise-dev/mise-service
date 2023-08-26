@@ -3,17 +3,55 @@ from database import create_db_and_tables, engine
 from models import User, Shop, Product
 from typing import Annotated
 import secrets
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import StreamingResponse
+from auth import decode_token, hash_password, create_token, verify_password
 
 app = FastAPI()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+async def get_current_user(token: Annotated[dict, Depends(oauth2_scheme)]):
+    token_data = decode_token(token)
+    with Session(engine) as session:
+        user = session.exec(select(User).where(User.name == token_data.get("username"))).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    return user
 
 @app.on_event("startup")
 async def on_startup():
     create_db_and_tables()
     
-@app.post("/Users/")
+@app.post("/token")
+async def _auth(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    with Session(engine) as session:
+        user = session.exec(select(User).where(User.name == form_data.username)).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid username or password",
+        )
+    if not verify_password(user.password, form_data.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Wrong password or username",
+        )
+    token = create_token({ "name": user.name, "uuid": user.id })
+    return { "access_token": token, "token_type": "bearer" }
+
+
+@app.get("/")
+def _index():
+    return { "msg": "Shopping should be a piece of kek" }
+
+@app.post("/users/")
 async def create_user(user: User):
+    user.password = hash_password(user.password)
     with Session(engine) as session:
         session.add(user)
         session.commit()
@@ -27,7 +65,7 @@ async def read_users():
         return Users
     
 @app.post("/shops/")
-async def create_shop(shop:Shop):
+async def create_shop(shop:Shop, user: Annotated[dict, Depends(get_current_user)]):
     with Session(engine) as session:
         session.add(shop)
         session.commit()
@@ -35,13 +73,13 @@ async def create_shop(shop:Shop):
         return shop
     
 @app.get("/Shops/")
-async def read_shops():
+async def read_shops(user: Annotated[dict, Depends(get_current_user)]):
     with Session(engine) as session:
         Shops = session.exec(select(Shop)).all()
         return Shops
     
 @app.post("/products/")
-async def  create_product(product:Product):
+async def create_product(product:Product, user: Annotated[dict, Depends(get_current_user)]):
     with Session(engine) as session:
         session.add(product)
         session.commit()
@@ -49,15 +87,15 @@ async def  create_product(product:Product):
         return product
     
 @app.get("/Products/")
-async def read_products():
+async def read_products(user: Annotated[dict, Depends(get_current_user)]):
     with Session(engine) as session:
-        Products = session.exec(select(Product)).all()
-        return
+        products = session.exec(select(Product)).all()
+        return products
 
 @app.post("/upload")
 async def upload_file(
     file: Annotated[UploadFile, File()],
-    token: Annotated[str, Form()]
+    user: Annotated[dict, Depends(get_current_user)]
 ):
     try:
         if file.content_type:
