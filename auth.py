@@ -20,3 +20,6 @@ def decode_token(token: str) -> any:
 
 def hash_password(password: str) -> str:
     return pbkdf2_sha512.hash(password)
+
+def verify_password(original: str, password: str) -> str:
+    return pbkdf2_sha512.verify(password, original)

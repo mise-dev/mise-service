@@ -6,7 +6,7 @@ import secrets
 from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import StreamingResponse
-from auth import decode_token, hash_password, create_token
+from auth import decode_token, hash_password, create_token, verify_password
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -36,7 +36,7 @@ async def _auth(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid username or password",
         )
-    if not hash_password(form_data.password) == user.password:
+    if not verify_password(user.password, form_data.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Wrong password or username",
@@ -51,6 +51,7 @@ def _index():
 
 @app.post("/users/")
 async def create_user(user: User):
+    user.password = hash_password(user.password)
     with Session(engine) as session:
         session.add(user)
         session.commit()
