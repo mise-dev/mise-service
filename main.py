@@ -1,13 +1,13 @@
 from sqlmodel import select, Session
 from database import create_db_and_tables, engine
 from models import User, Shop, Product
-from typing import Annotated
+from typing import Annotated, Optional, List
 import secrets
-from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException, status
+from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import StreamingResponse
 from auth import decode_token, hash_password, create_token, verify_password
-
+from search import search_product
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -27,6 +27,12 @@ async def get_current_user(token: Annotated[dict, Depends(oauth2_scheme)]):
 async def on_startup():
     create_db_and_tables()
     
+@app.post("/search")
+async def search_products( query: str):
+    with Session(engine) as session:
+        product = session.exec(select(Shop).where(Shop.name.ilike("%{}%".format(query))))
+        return product
+
 @app.post("/token")
 async def _auth(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     with Session(engine) as session:
