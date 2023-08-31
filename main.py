@@ -13,8 +13,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 async def get_current_user(token: Annotated[dict, Depends(oauth2_scheme)]):
     token_data = decode_token(token)
+
     with Session(engine) as session:
-        user = session.exec(select(User).where(User.name == token_data.get("username"))).first()
+        user = session.exec(select(User).where(User.name == token_data.get("name"))).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
