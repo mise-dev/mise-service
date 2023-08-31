@@ -28,10 +28,17 @@ async def on_startup():
     create_db_and_tables()
     
 @app.post("/search")
-async def search_products( query: str):
+async def search_products( query: str) -> List[Shop]:
+    
     with Session(engine) as session:
-        product = session.exec(select(Shop).where(Shop.name.ilike("%{}%".format(query))))
-        return product
+        products = session.exec(select(Shop).where(Shop.name.ilike("%{}%".format(query))))
+        
+        final=[]
+        print(type(products))
+        for product in products:
+            print("\n\n")
+            final.append(product)
+        return final
 
 @app.post("/token")
 async def _auth(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
