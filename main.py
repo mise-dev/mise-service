@@ -29,16 +29,19 @@ async def on_startup():
     create_db_and_tables()
     
 @app.post("/search")
-async def search_products( query: str) -> List[Shop]:
+async def search_products( query: str) -> List[Product]:
     
     with Session(engine) as session:
-        products = session.exec(select(Shop).where(Shop.name.ilike("%{}%".format(query))))
-        
+        products = session.exec(select(Product).where(Product.name.ilike("%{}%".format(query))))
+        products_description = session.exec(select(Product).where(Product.description.ilike("%{}%".format(query))))
+
         final=[]
-        print(type(products))
         for product in products:
-            print("\n\n")
             final.append(product)
+        
+        for product in products_description:
+            if product not in final:
+                final.append(product)
         return final
 
 @app.post("/token")
