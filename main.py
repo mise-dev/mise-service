@@ -32,17 +32,9 @@ async def on_startup():
 async def search_products( query: str) -> List[Product]:
     
     with Session(engine) as session:
-        products = session.exec(select(Product).where(Product.name.ilike("%{}%".format(query))))
-        products_description = session.exec(select(Product).where(Product.description.ilike("%{}%".format(query))))
+        products = session.exec(select(Product).where((Product.name.ilike("%{}%".format(query))) | (Product.description.ilike("%{}%".format(query)))))
 
-        final=[]
-        for product in products:
-            final.append(product)
-        
-        for product in products_description:
-            if product not in final:
-                final.append(product)
-        return final
+        return list(products)
 
 @app.post("/token")
 async def _auth(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
