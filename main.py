@@ -1,4 +1,4 @@
-from sqlmodel import select, Session
+from sqlmodel import select, Session, or_
 from database import create_db_and_tables, engine
 from models import User, Shop, Product
 from typing import Annotated, Optional, List
@@ -32,7 +32,7 @@ async def on_startup():
 async def search_products( query: str) -> List[Product]:
     
     with Session(engine) as session:
-        products = session.exec(select(Product).where((Product.name.ilike("%{}%".format(query))) | (Product.description.ilike("%{}%".format(query)))))
+        products = session.exec(select(Product).where(or_(Product.name.ilike("%{}%".format(query))), (Product.description.ilike("%{}%".format(query)))))
 
         return list(products)
 
