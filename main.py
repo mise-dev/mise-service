@@ -7,7 +7,8 @@ from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException, sta
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import StreamingResponse
 from auth import decode_token, hash_password, create_token, verify_password
-from search import search_product
+import os
+
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -26,6 +27,8 @@ async def get_current_user(token: Annotated[dict, Depends(oauth2_scheme)]):
 
 @app.on_event("startup")
 async def on_startup():
+    if not os.path.isdir("images"):
+        os.mkdir("images")
     create_db_and_tables()
     
 @app.post("/search")
@@ -113,9 +116,9 @@ async def upload_file(
             disk_filename = f"{secrets.token_urlsafe(10)}.{extension[-1]}"
 
             # write the file to disk
-            with open(disk_filename, "wb") as image_file:
+            with open(f"images/{disk_filename}", "wb") as image_file:
                 image_file.write(content)
-            return { "msg": f"wrote file to {disk_filename}" }
+            return { "image_uri": f"/images/{disk_filename}", "msg": "Success" }
     except:
         return { "msg": "Failed" }
 
