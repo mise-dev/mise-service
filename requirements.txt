@@ -2,6 +2,7 @@ fastapi
 openai
 sqlmodel
 momo
+python-decouple
 python-multipart
 python-jose[cryptography]
 uvicorn
