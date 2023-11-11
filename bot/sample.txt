@@ -1,0 +1,13 @@
+# This is where we will put sample product data
+
+# This is the url to the list of sample products -> https://docs.google.com/spreadsheets/d/19ZvDvrEio5rR0hPk31oGsaJP4fDNsXn3tpP1t6mPHp0/edit#gid=0
+
+
+Product {
+    name,
+    price,
+    description,
+    image_url,
+    product_link,
+    category
+}
