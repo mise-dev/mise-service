@@ -1,6 +1,5 @@
-from typing import Optional
+from typing import Optional, List, Union
 from sqlmodel import Field, Session, SQLModel, create_engine, select
-
 
 class User(SQLModel, table=True):
     id: int = Field(primary_key=True)
@@ -33,3 +32,16 @@ class Product(SQLModel, table=True):
     active: bool
     stock: int
     category: str
+
+class TransactionProductSnapshot(SQLModel):
+    product: Product
+    quantity: int
+
+class Transaction(SQLModel, table=True):
+    id: int = Field(primary_key=True)
+    uid: int = Field(default=None, foreign_key="user.id") # id of the user who initiated the transaction
+    products: List[TransactionProductSnapshot]
+    date: int # utc timestamp
+    payment_method: Union["momo", "credit-card"]
+    amount_total: int
+    status: Union["Pending","Procession", "Complete"]
