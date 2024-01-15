@@ -1,4 +1,4 @@
-from sqlmodel import select, Session, or_
+from sqlmodel import select, Session, or_, and_
 from database import create_db_and_tables, engine
 from models import (
     User,
@@ -162,7 +162,7 @@ async def upload_file(
 
 # returns all transactions carried out by the user
 @app.get("/transaction")
-async def list_transactions(user: User):
+async def list_transactions(user: Annotated[dict, Depends(get_current_user)]):
     with Session(engine) as session:
         return session.exec(select(Transaction).where(Transaction.uid == user.id)).all()
 
@@ -208,10 +208,10 @@ async def create_transaction(
 
 
 @app.post("/transaction/cancel")
-async def cancel_transaction(transaction_id: str, user: User):
+async def cancel_transaction(transaction_id: int, user: Annotated[dict, Depends(get_current_user)]):
     with Session(engine) as session:
         transaction = session.exec(
-            select(Transaction).where(Transaction.id == transaction_id)
+            select(Transaction).where(and_(Transaction.id == transaction_id, Transaction.uid == user.id))
         ).one()
         transaction.status = "Cancelled"
 
