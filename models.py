@@ -1,5 +1,6 @@
 from typing import Optional, List, Union
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlmodel import Field, SQLModel, create_engine, select
+from pydantic import BaseModel
 
 class User(SQLModel, table=True):
     id: int = Field(primary_key=True)
@@ -33,15 +34,23 @@ class Product(SQLModel, table=True):
     stock: int
     category: str
 
-class TransactionProductSnapshot(SQLModel):
+
+class _ReqProductSnapshot(BaseModel):
+    product_id: str
+    quantity: int
+
+class _TransactionProductSnapshot(BaseModel):
     product: Product
     quantity: int
+
+class TransactionProductsSnapshot(BaseModel):
+    snapshots: List[_TransactionProductSnapshot]
 
 class Transaction(SQLModel, table=True):
     id: int = Field(primary_key=True)
     uid: int = Field(default=None, foreign_key="user.id") # id of the user who initiated the transaction
-    products: List[TransactionProductSnapshot]
-    date: int # utc timestamp
-    payment_method: Union["momo", "credit-card"]
+    product_snapshots: str # the products snapshots are going to be JSON serialized
+    date: float # utc timestamp
+    payment_method: str # fallback to -> Union["momo", "credit-card"]
     amount_total: int
-    status: Union["Pending","Procession", "Complete"]
+    status: str  # fallback to -> Union["Pending","Processing", "Complete", "Cancelled"]
