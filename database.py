@@ -1,5 +1,4 @@
-from sqlmodel import Field, Session, SQLModel, create_engine, select
-from models import User
+from sqlmodel import SQLModel, create_engine
 from decouple import config
 
 DATABASE_URL=config("DATABASE_URL")
