@@ -1,4 +1,4 @@
-from sqlmodel import select, Session, or_, and_
+from sqlmodel import select, Session, or_, and_, update
 from database import create_db_and_tables, engine
 from models import (
     User,
@@ -156,18 +156,22 @@ async def read_product(
 async def update_product(
     product_id: int,
     product: Product,
-    user: Annotated[dict, Depends(get_current_user)]
+    user: dict = Depends(get_current_user)  
 ):
     with Session(engine) as session:
         db_product = session.get(Product, product_id)
         if not db_product:
             raise HTTPException(status_code=404, detail="Product not found")
-        product_data = product.dict(exclude_unset=True)
-        for key, value in product_data.items():
-            setattr(db_product, key, value)
+
+         # Create a new product instance with updated values
+        updated_product_data = product.dict(exclude_unset=True)
+        updated_product = Product(**updated_product_data)
+
+        # Update the database with the new product
+        session.merge(updated_product)
         session.commit()
-        session.refresh(db_product)
-        return db_product
+
+        return updated_product
 
 @app.delete("/products/{product_id}")
 async def delete_product(
