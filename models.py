@@ -3,7 +3,7 @@ from sqlmodel import Field, SQLModel, create_engine, select
 from pydantic import BaseModel
 
 class User(SQLModel, table=True):
-    id: int = Field(primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     email: str
     contact_phone: int
@@ -15,8 +15,8 @@ class User(SQLModel, table=True):
     password: str
 
 class Shop(SQLModel, table=True):
-    id: int = Field(primary_key=True)
-    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(default=None, foreign_key="user.id")
     name: str
     description: str
     momo: int
@@ -24,8 +24,8 @@ class Shop(SQLModel, table=True):
 
 
 class Product(SQLModel, table=True):
-    id: int = Field(primary_key=True)
-    shop_id: Optional[int] = Field(default=None, foreign_key="shop.id")
+    id: Optional[int] = Field(default=None, primary_key=True)
+    shop_id: int = Field(default=None, foreign_key="shop.id")
     name: str
     price: int
     description: str
@@ -47,7 +47,7 @@ class TransactionProductsSnapshot(BaseModel):
     snapshots: List[_TransactionProductSnapshot]
 
 class Transaction(SQLModel, table=True):
-    id: int = Field(primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     uid: int = Field(default=None, foreign_key="user.id") # id of the user who initiated the transaction
     product_snapshots: str # the products snapshots are going to be JSON serialized
     date: float # utc timestamp
