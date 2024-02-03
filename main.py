@@ -123,6 +123,13 @@ async def read_shops(user: Annotated[dict, Depends(get_current_user)]):
         return Shops
 
 
+@app.get("/Shops/products")
+async def read_shop_products(shop_id: int, user: Annotated[dict, Depends(get_current_user)]):
+    with Session(engine) as session:
+        query = select(Product).where(Product.shop_id == shop_id)
+        products = session.exec(query).all()
+        return products
+
 @app.post("/products/")
 async def create_product(
     product: Product, user: Annotated[dict, Depends(get_current_user)]
