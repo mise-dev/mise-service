@@ -1,4 +1,4 @@
-from sqlmodel import select, Session, or_, and_
+from sqlmodel import select, Session, or_, and_, update
 from database import create_db_and_tables, engine
 from models import (
     User,
@@ -139,6 +139,52 @@ async def read_products(user: Annotated[dict, Depends(get_current_user)]):
     with Session(engine) as session:
         products = session.exec(select(Product)).all()
         return products
+
+@app.get("/products/{product_id}")
+async def read_product(
+    product_id: int,
+    user: Annotated[dict, Depends(get_current_user)]
+):
+    with Session(engine) as session:
+        product = session.get(Product, product_id)
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        return product
+
+
+@app.put("/products/{product_id}")
+async def update_product(
+    product_id: int,
+    product: Product,
+    user: dict = Depends(get_current_user)  
+):
+    with Session(engine) as session:
+        db_product = session.get(Product, product_id)
+        if not db_product:
+            raise HTTPException(status_code=404, detail="Product not found")
+
+         # Create a new product instance with updated values
+        updated_product_data = product.dict(exclude_unset=True)
+        updated_product = Product(**updated_product_data)
+
+        # Update the database with the new product
+        session.merge(updated_product)
+        session.commit()
+
+        return updated_product
+
+@app.delete("/products/{product_id}")
+async def delete_product(
+    product_id: int,
+    user: Annotated[dict, Depends(get_current_user)]
+):
+    with Session(engine) as session:
+        db_product = session.get(Product, product_id)
+        if not db_product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        session.delete(db_product)
+        session.commit()
+        return {"message": "Product deleted"}
 
 
 @app.post("/upload")
