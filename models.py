@@ -11,7 +11,7 @@ class User(SQLModel, table=True):
     profile_image: str
     location: str
     date_of_birth: str
-    active: bool
+    active: bool = Field(default=True)
     password: str
 
 class Shop(SQLModel, table=True):
