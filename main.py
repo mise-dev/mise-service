@@ -128,14 +128,14 @@ async def create_shop(shop: Shop, user: Annotated[dict, Depends(get_current_user
         return shop
 
 
-@app.get("/Shops/")
+@app.get("/shops/")
 async def read_shops(user: Annotated[dict, Depends(get_current_user)]):
     with Session(engine) as session:
         Shops = session.exec(select(Shop)).all()
         return Shops
 
 
-@app.get("/Shops/products")
+@app.get("/shops/products")
 async def read_shop_products(shop_id: int, user: Annotated[dict, Depends(get_current_user)]):
     with Session(engine) as session:
         query = select(Product).where(Product.shop_id == shop_id)
@@ -153,7 +153,7 @@ async def create_product(
         return product
 
 
-@app.get("/Products/")
+@app.get("/sroducts/")
 async def read_products(user: Annotated[dict, Depends(get_current_user)]):
     with Session(engine) as session:
         products = session.exec(select(Product)).all()
