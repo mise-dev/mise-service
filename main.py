@@ -23,11 +23,23 @@ from fastapi import (
 )
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from auth import decode_token, hash_password, create_token, verify_password
 import os
 from datetime import datetime, timezone
 
 app = FastAPI()
+# add CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "localhost:3000"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
