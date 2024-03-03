@@ -245,7 +245,6 @@ async def create_transaction(
     payment_method: str,
     user: Annotated[dict, Depends(get_current_user)],
 ):
-    print(products)
     with Session(engine) as session:
         # get the products
         _products = []
@@ -274,6 +273,7 @@ async def create_transaction(
 
         session.add(transaction)
         session.commit()
+        session.refresh(transaction)
 
         return {"success": True, "data": transaction}
 
