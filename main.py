@@ -153,7 +153,7 @@ async def create_product(
         return product
 
 
-@app.get("/sroducts/")
+@app.get("/products/")
 async def read_products(user: Annotated[dict, Depends(get_current_user)]):
     with Session(engine) as session:
         products = session.exec(select(Product)).all()
@@ -224,6 +224,12 @@ async def upload_file(
     except:
         return {"msg": "Failed"}
 
+@app.get("/images/{image_uri}")
+async def _load_image(image_uri):
+    def read_image_file():
+        with open(f"images/{image_uri}", "rb") as image_file:
+            yield from image_file
+    return StreamingResponse(read_image_file())
 
 # returns all transactions carried out by the user
 @app.get("/transaction")
