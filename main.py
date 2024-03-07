@@ -56,7 +56,19 @@ async def get_current_user(token: Annotated[dict, Depends(oauth2_scheme)]):
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return user
+    with Session(engine) as session:
+        user_shop = session.exec(select(Shop).where(Shop.user_id == user.id)).first()
+        if not user_shop:
+            user_shop = {}
+    # convert the user shop to dict if not dict
+    user_shop = user_shop.dict() if isinstance(user_shop, Shop) else user_shop
+    _user_shop = {}
+    # prepend all shop property keys with shop_ to distinguish from user info
+    for key in user_shop.keys():
+        _user_shop[f"shop_{key}"] = user_shop[key]
+
+    # merge the two results
+    return user.dict() | _user_shop
 
 
 @app.on_event("startup")
@@ -96,6 +108,9 @@ async def _auth(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     token = create_token({"name": user.name, "uuid": user.id})
     return {"access_token": token, "token_type": "bearer"}
 
+@app.post("/auth")
+async def _authenticate(user: Annotated[dict, Depends(get_current_user)]):
+    return user
 
 @app.get("/")
 def _index():
@@ -175,7 +190,7 @@ async def read_product(
 async def update_product(
     product_id: int,
     product: Product,
-    user: dict = Depends(get_current_user)  
+    user: dict = Depends(get_current_user)
 ):
     with Session(engine) as session:
         db_product = session.get(Product, product_id)
