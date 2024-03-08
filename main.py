@@ -161,6 +161,7 @@ async def read_shop_products(shop_id: int, user: Annotated[dict, Depends(get_cur
 async def create_product(
     product: Product, user: Annotated[dict, Depends(get_current_user)]
 ):
+    print(product)
     with Session(engine) as session:
         session.add(product)
         session.commit()

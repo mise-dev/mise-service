@@ -29,6 +29,7 @@ class Product(SQLModel, table=True):
     name: str
     price: int
     description: str
+    main_image: str
     images: str
     active: bool
     stock: int
