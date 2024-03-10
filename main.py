@@ -1,6 +1,7 @@
 from sqlmodel import select, Session, or_, and_, update
 from database import create_db_and_tables, engine
 from models import (
+    CartItem,
     User,
     Shop,
     Product,
@@ -307,3 +308,46 @@ async def cancel_transaction(transaction_id: int, user: Annotated[dict, Depends(
         session.refresh(transaction)
 
     return {"success": True}
+
+
+@app.get("/cart")
+async def get_cart(user: Annotated[dict, Depends(get_current_user)]):
+    
+    # return {"data": CartItem}
+    with Session(engine) as session:
+        cart = session.exec(select(CartItem)).all()
+        return cart
+
+
+
+@app.post("/cart")
+async def create_cart(
+    cart: CartItem, user: Annotated[dict, Depends(get_current_user)]
+):
+    with Session(engine) as session:
+        session.add(cart)
+        session.commit()
+        session.refresh(cart)
+        return cart
+
+@app.put("/cart/{id}")
+async def update_cart(
+    id: int,
+    cart: CartItem,
+    user: dict = Depends(get_current_user)  
+):
+ with Session(engine) as session:
+        db_product = session.get(CartItem, id)
+        if not db_product:
+            raise HTTPException(status_code=404, detail="Product not found")
+
+         # Create a new product instance with updated values
+        updated_product_data = cart.dict(exclude_unset=True)
+        updated_product = CartItem(**updated_product_data)
+
+        # Update the database with the new product
+        session.merge(updated_product)
+        session.commit()
+
+        return updated_product
+

@@ -35,6 +35,12 @@ class Product(SQLModel, table=True):
     stock: int
     category: str
 
+class CartItem(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    product_id: int = Field(default=None, foreign_key="product.id")
+    user_id: int = Field(default=None, foreign_key="user.id")
+
+    quantity:int
 
 class _ReqProductSnapshot(BaseModel):
     product_id: str
